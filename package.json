@@ -1,0 +1,22 @@
+{
+  "name": "chi-cto",
+  "version": "0.1.0",
+  "description": "Chi CTO Priority Scoring and Task Management System",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "jest",
+    "build": "tsc",
+    "dev": "ts-node src/index.ts"
+  },
+  "keywords": ["priority-scoring", "task-management"],
+  "author": "Roderic Andrews",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0"
+  }
+}
