@@ -5,6 +5,20 @@
 
 import { cli, CommandArgs } from './cli';
 
+/**
+ * Cloudflare Worker Env interface
+ * Defines environment variables
+ */
+interface Env {
+  LOG_LEVEL?: string;
+  TOKEN_BUDGET?: string;
+}
+
+interface ExecutionContext {
+  waitUntil(promise: Promise<any>): void;
+  passThroughOnException(): void;
+}
+
 export interface MCP_Request {
   method: string;
   path: string;
@@ -149,7 +163,7 @@ export async function handleRequest(request: Request): Promise<Response> {
  * Called for every incoming request
  */
 export default {
-  async fetch(request: Request): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     return handleRequest(request);
   },
 };

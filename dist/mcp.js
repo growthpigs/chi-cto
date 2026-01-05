@@ -1375,7 +1375,7 @@ async function handleRequest(request) {
   }
 }
 var mcp_default = {
-  async fetch(request) {
+  async fetch(request, env, ctx) {
     return handleRequest(request);
   }
 };

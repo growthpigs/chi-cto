@@ -2,6 +2,18 @@
  * MCP Server Implementation for Cloudflare Workers
  * Routes HTTP requests to CLI command handlers
  */
+/**
+ * Cloudflare Worker Env interface
+ * Defines environment variables
+ */
+interface Env {
+    LOG_LEVEL?: string;
+    TOKEN_BUDGET?: string;
+}
+interface ExecutionContext {
+    waitUntil(promise: Promise<any>): void;
+    passThroughOnException(): void;
+}
 export interface MCP_Request {
     method: string;
     path: string;
@@ -23,7 +35,7 @@ export declare function handleRequest(request: Request): Promise<Response>;
  * Called for every incoming request
  */
 declare const _default: {
-    fetch(request: Request): Promise<Response>;
+    fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response>;
 };
 export default _default;
 //# sourceMappingURL=mcp.d.ts.map
