@@ -271,18 +271,40 @@ cat ~/my-project/handover.md
 
 ---
 
-## Live System
+## How to Run Chi CTO
 
-**Production Deployment:**
-- https://chi-cto.roderic-andrews.workers.dev
-- Cloudflare Workers (serverless)
-- Available for REST API calls
+### Local CLI (RECOMMENDED)
 
-**Endpoints:**
-- `POST /chi-cto/suggest` - Analyze features
-- `POST /chi-cto/mode-b` - Execute orchestration
-- `GET /chi-cto/status` - Show last session
-- `GET /health` - Health check
+**Use the local CLI for actual feature building:**
+
+```bash
+# Analyze features
+npx ts-node src/cli-local.ts suggest ~/my-project
+
+# Execute orchestration
+npx ts-node src/cli-local.ts mode-b ~/my-project
+
+# Check status
+npx ts-node src/cli-local.ts status ~/my-project
+```
+
+**Why local?** The orchestrator needs:
+- Filesystem access (read active-tasks.md)
+- Git access (create worktrees, commit)
+- npm access (run quality gates)
+- ESLint access (run linting)
+
+Cloudflare Workers do NOT have these capabilities.
+
+### REST API (Reference Only)
+
+**Cloudflare Workers endpoint:**
+- URL: https://chi-cto.roderic-andrews.workers.dev
+- Health: `GET /health`
+- Suggest: `POST /chi-cto/suggest`
+- Status: `GET /chi-cto/status`
+
+**Limitation:** REST API cannot execute orchestration because Cloudflare Workers cannot access your filesystem or run git/npm commands. Use the API only for reference or documentation purposes.
 
 ---
 

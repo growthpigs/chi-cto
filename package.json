@@ -8,7 +8,10 @@
     "build": "tsc && esbuild src/mcp.ts --bundle --platform=node --format=esm --outfile=dist/mcp.js",
     "dev": "ts-node src/index.ts",
     "deploy": "wrangler deploy",
-    "deploy:staging": "wrangler deploy --env staging"
+    "deploy:staging": "wrangler deploy --env staging",
+    "cli": "npx ts-node src/cli-local.ts",
+    "cli:suggest": "npx ts-node src/cli-local.ts suggest",
+    "cli:mode-b": "npx ts-node src/cli-local.ts mode-b"
   },
   "keywords": ["priority-scoring", "task-management", "orchestration"],
   "author": "Roderic Andrews",
