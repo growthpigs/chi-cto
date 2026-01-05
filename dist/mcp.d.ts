@@ -1,6 +1,12 @@
 /**
  * MCP Server Implementation for Cloudflare Workers
  * Routes HTTP requests to CLI command handlers
+ *
+ * Hardened for internal use with:
+ * - Request validation
+ * - Error logging
+ * - Timeout protection
+ * - Input sanitization
  */
 /**
  * Cloudflare Worker Env interface
