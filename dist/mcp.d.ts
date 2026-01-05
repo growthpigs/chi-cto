@@ -11,7 +11,7 @@ interface Env {
     TOKEN_BUDGET?: string;
 }
 interface ExecutionContext {
-    waitUntil(promise: Promise<any>): void;
+    waitUntil(promise: Promise<void>): void;
     passThroughOnException(): void;
 }
 export interface MCP_Request {

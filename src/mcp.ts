@@ -15,8 +15,17 @@ interface Env {
 }
 
 interface ExecutionContext {
-  waitUntil(promise: Promise<any>): void;
+  waitUntil(promise: Promise<void>): void;
   passThroughOnException(): void;
+}
+
+interface SuggestRequest {
+  projectPath?: string;
+}
+
+interface ModeBRequest {
+  projectPath?: string;
+  tokenBudget?: number;
 }
 
 export interface MCP_Request {
@@ -61,7 +70,7 @@ export async function handleRequest(request: Request): Promise<Response> {
 
     // Route: POST /chi-cto/suggest
     if (path === '/chi-cto/suggest' && request.method === 'POST') {
-      const body = (await request.json()) as any;
+      const body = (await request.json()) as SuggestRequest;
       const result = await cli.execute({
         subcommand: 'suggest' as const,
         projectPath: body.projectPath,
@@ -75,7 +84,7 @@ export async function handleRequest(request: Request): Promise<Response> {
 
     // Route: POST /chi-cto/mode-b
     if (path === '/chi-cto/mode-b' && request.method === 'POST') {
-      const body = (await request.json()) as any;
+      const body = (await request.json()) as ModeBRequest;
       const result = await cli.execute({
         subcommand: 'mode-b run' as const,
         projectPath: body.projectPath,
@@ -120,7 +129,7 @@ export async function handleRequest(request: Request): Promise<Response> {
     // Route: GET /
     if (path === '/' && request.method === 'GET') {
       const help = await cli.execute({ subcommand: 'status' });
-      return new Response(help, {
+      return new Response(JSON.stringify({ result: help }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -143,12 +152,13 @@ export async function handleRequest(request: Request): Promise<Response> {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
-  } catch (error: any) {
-    console.error('Error handling request:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    console.error('Error handling request:', errorMessage);
 
     return new Response(
       JSON.stringify({
-        error: error.message || 'Internal server error',
+        error: errorMessage,
       }),
       {
         status: 500,

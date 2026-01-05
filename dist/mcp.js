@@ -1340,7 +1340,7 @@ async function handleRequest(request) {
     }
     if (path4 === "/" && request.method === "GET") {
       const help = await cli.execute({ subcommand: "status" });
-      return new Response(help, {
+      return new Response(JSON.stringify({ result: help }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
@@ -1362,10 +1362,11 @@ async function handleRequest(request) {
       }
     );
   } catch (error) {
-    console.error("Error handling request:", error);
+    const errorMessage = error instanceof Error ? error.message : "Internal server error";
+    console.error("Error handling request:", errorMessage);
     return new Response(
       JSON.stringify({
-        error: error.message || "Internal server error"
+        error: errorMessage
       }),
       {
         status: 500,
