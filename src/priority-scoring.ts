@@ -14,6 +14,7 @@ export interface Feature {
   confidence: number;   // 0-10
   impact: number;       // 0-10
   multiplier?: 'kids+school' | 'payment-failure' | 'lawyer' | 'phishing';
+  description?: string; // Optional feature description
 }
 
 export interface ScoredFeature extends Feature {
