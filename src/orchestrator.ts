@@ -2,7 +2,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync } from 'child_process';
+import { execSync, execFileSync } from 'child_process';
 import { PriorityScorer, Feature, ScoredFeature } from './priority-scoring';
 import { QualityGatesExecutor, GateResult } from './quality-gates';
 import { ErrorRecoveryHandler } from './error-recovery';
@@ -52,6 +52,16 @@ export interface OrchestratorResult {
   state: SessionState;
   report: string;
   success: boolean;
+}
+
+/**
+ * Sanitize branch name to prevent command injection
+ * Only allows alphanumeric characters, hyphens, underscores, and forward slashes
+ */
+function sanitizeBranchName(name: string): string {
+  // Remove any characters that could be used for shell injection
+  // Only allow: a-z, A-Z, 0-9, -, _, /
+  return name.replace(/[^a-zA-Z0-9_\-\/]/g, '');
 }
 
 /**
@@ -121,26 +131,64 @@ function parseMarkdownFeatures(markdown: string): Feature[] {
 
 /**
  * Create isolated git worktree for feature work
+ * SECURITY: Uses execFileSync (no shell) to prevent command injection
  */
 async function createGitWorktree(projectPath: string, branchName: string): Promise<string> {
+  // Sanitize branch name to prevent injection attacks
+  const safeBranchName = sanitizeBranchName(branchName);
+  if (!safeBranchName) {
+    throw new Error(`Invalid branch name: ${branchName}`);
+  }
+
+  const worktreePath = path.join(projectPath, '.worktrees', safeBranchName);
+
+  // Ensure .worktrees directory exists
+  const worktreesDir = path.dirname(worktreePath);
+  if (!fs.existsSync(worktreesDir)) {
+    fs.mkdirSync(worktreesDir, { recursive: true });
+  }
+
   try {
-    const worktreePath = path.join(projectPath, '.worktrees', branchName);
-
-    // Ensure .worktrees directory exists
-    const worktreesDir = path.dirname(worktreePath);
-    if (!fs.existsSync(worktreesDir)) {
-      fs.mkdirSync(worktreesDir, { recursive: true });
-    }
-
-    // Create worktree
-    execSync(`git worktree add "${worktreePath}" -b "${branchName}" 2>/dev/null || true`, {
+    // SECURITY: execFileSync does not invoke shell, preventing command injection
+    // No || true - we want to know if git fails
+    execFileSync('git', ['worktree', 'add', worktreePath, '-b', safeBranchName], {
       cwd: projectPath,
       stdio: 'pipe'
     });
 
     return worktreePath;
   } catch (error) {
-    throw new Error(`Failed to create git worktree: ${error instanceof Error ? error.message : String(error)}`);
+    // Provide clear error message instead of silently succeeding
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to create git worktree '${safeBranchName}': ${message}`);
+  }
+}
+
+/**
+ * Cleanup a git worktree to prevent resource leaks
+ * Called when feature building fails or is blocked
+ */
+function cleanupWorktree(projectPath: string, worktreePath: string): void {
+  try {
+    // First, try to remove the worktree properly via git
+    execFileSync('git', ['worktree', 'remove', '--force', worktreePath], {
+      cwd: projectPath,
+      stdio: 'pipe'
+    });
+  } catch {
+    // If git worktree remove fails, try manual cleanup
+    try {
+      if (fs.existsSync(worktreePath)) {
+        fs.rmSync(worktreePath, { recursive: true, force: true });
+      }
+      // Also prune orphaned worktrees
+      execFileSync('git', ['worktree', 'prune'], {
+        cwd: projectPath,
+        stdio: 'pipe'
+      });
+    } catch {
+      // Ignore cleanup errors - best effort
+    }
   }
 }
 
@@ -377,9 +425,13 @@ export class ModeBAOrchestrator {
 
         state.currentFeature = feature;
 
+        // Track worktree for cleanup
+        let worktreePath: string | null = null;
+        let featureBlocked = false;
+
         try {
           // Create isolated worktree
-          const worktreePath = await createGitWorktree(projectPath, `feature/${feature.id}`);
+          worktreePath = await createGitWorktree(projectPath, `feature/${feature.id}`);
 
           // Spawn FeatureBuilder agent
           const buildResult = await spawnFeatureBuilderAgent(
@@ -411,6 +463,7 @@ export class ModeBAOrchestrator {
               if (recovery.recovered) {
                 state.completedFeatures.push(feature.id);
               } else {
+                featureBlocked = true;
                 state.blockedFeatures.push(feature.id);
                 state.decisions?.push(`Feature ${feature.name} blocked: ${failedGates.map(g => g.message).join('; ')}`);
               }
@@ -419,12 +472,19 @@ export class ModeBAOrchestrator {
             }
           } else {
             // Build failed
+            featureBlocked = true;
             state.blockedFeatures.push(feature.id);
             state.decisions?.push(`Feature ${feature.name} build failed: ${buildResult.error}`);
           }
         } catch (error) {
+          featureBlocked = true;
           state.blockedFeatures.push(feature.id);
           state.decisions?.push(`Feature ${feature.name} error: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+          // CLEANUP: Remove worktree if feature was blocked to prevent resource leak
+          if (featureBlocked && worktreePath) {
+            cleanupWorktree(projectPath, worktreePath);
+          }
         }
       }
 
