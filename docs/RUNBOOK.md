@@ -617,6 +617,84 @@ git revert abc123def456...
 
 ---
 
+## Verification Commands
+
+**Purpose:** Runtime tests to prove system works. Run BEFORE any debugging session.
+
+### Warp Parallel Orchestration
+
+```bash
+# 1. Verify Warp process running (name is "stable", not "Warp")
+osascript -e 'tell application "System Events" to (name of processes) contains "stable"'
+# Expected: true
+
+# 2. Verify Warp is frontmost
+osascript -e 'tell application "System Events" to name of first application process whose frontmost is true'
+# Expected: stable
+
+# 3. Test spawn (single worker, quick test)
+npx ts-node src/cli-local.ts spawn /Users/rodericandrews/_PAI/projects/chi-cto/test-project --workers 1
+# Expected: Worker spawns, status file created
+
+# 4. Check worker status
+npx ts-node src/cli-local.ts workers status /Users/rodericandrews/_PAI/projects/chi-cto/test-project
+# Expected: Shows worker with status (complete/in_progress)
+
+# 5. Verify status file format
+cat .chi-cto/workers/*/status.json | jq .
+# Expected: Valid JSON with workerId, feature, status fields
+```
+
+### Environment & Build
+
+```bash
+# TypeScript compiles
+npx tsc --noEmit
+# Expected: No output (clean)
+
+# All tests pass
+npm test
+# Expected: 143 passed, 0 failed
+
+# Build succeeds
+npm run build
+# Expected: dist/mcp.js created
+```
+
+### Chi CTO CLI
+
+```bash
+# Help works
+npx ts-node src/cli-local.ts
+# Expected: Shows help with suggest/mode-b/spawn commands
+
+# Suggest works
+npx ts-node src/cli-local.ts suggest /Users/rodericandrews/_PAI/projects/chi-cto/test-project
+# Expected: Shows scored features from active-tasks.md
+
+# Status works
+npx ts-node src/cli-local.ts workers status /Users/rodericandrews/_PAI/projects/chi-cto/test-project
+# Expected: Shows worker status or "no workers found"
+```
+
+### Critical Constraint: osascript Window/Tab Conflation
+
+**WARNING:** osascript counts each TAB as a "window". Cannot distinguish real windows from tabs.
+
+```bash
+# DO NOT USE for verification:
+osascript -e 'tell application "System Events" to tell process "stable" to count windows'
+# MISLEADING - returns tabs + windows combined
+
+# Tab counting DOES NOT WORK:
+osascript -e 'tell application "System Events" to tell process "stable" to count tabs of window 1'
+# ERROR: -1700 (not supported)
+```
+
+**See:** EP-067 in ~/.claude/troubleshooting/error-patterns.md
+
+---
+
 **Last Updated:** 2026-01-05
 **Status:** Production Ready
 **Confidence:** 9/10

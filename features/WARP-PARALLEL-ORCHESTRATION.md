@@ -177,7 +177,7 @@ Begin working autonomously. Signal completion via status file.
 - [x] Workers write status files on completion (protocol defined)
 - [x] Orchestrator detects completion via polling (worker-monitor.ts)
 - [x] Can consolidate results from all workers (consolidate command)
-- [ ] End-to-end: spawn → monitor → consolidate works (needs live testing)
+- [x] End-to-end: spawn → monitor → consolidate works (VERIFIED 2026-01-05)
 
 ## Files Created/Modified
 
@@ -201,16 +201,18 @@ Begin working autonomously. Signal completion via status file.
 ### Verified
 
 - ✅ TypeScript compiles
-- ✅ All 119 tests pass
+- ✅ All 143 tests pass
 - ✅ Environment validation works
 - ✅ JSON parsing handles malformed data gracefully
 - ✅ CLI commands work correctly
 - ✅ AppleScript escaping is correct (double-escape is intentional)
+- ✅ Live end-to-end test passed (Chi-Gateway Health Inspector task completed)
 
-### Gaps to Address
+### PAI Documentation Updates (2026-01-05)
 
-- ⚠️ No unit tests for new modules (warp-spawner.ts, worker-monitor.ts)
-- ⚠️ No live end-to-end test yet
+- ✅ EP-067 added to ~/.claude/troubleshooting/error-patterns.md
+- ✅ Verification Commands section added to docs/RUNBOOK.md
+- ✅ Lesson committed to mem0: "Static vs Runtime verification rule"
 
 ### Edge Cases Tested
 
