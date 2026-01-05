@@ -171,42 +171,25 @@ export async function spawnWorkers(
 
 /**
  * Verify Warp is ready for worker spawning
- * Checks: Warp running, exactly 1 window, Warp is focused
+ *
+ * NOTE: osascript counts each TAB as a "window", not actual windows.
+ * We only verify Warp is running. The actual frontmost check happens
+ * right before keystroke delivery in spawnWarpWorkerInTab().
+ *
+ * User must close other Warp windows manually to avoid keystroke interference.
  */
 export async function verifyWarpReady(): Promise<{ ready: boolean; errors: string[] }> {
   const errors: string[] = [];
 
   try {
-    // Check 1: Is Warp running? (process name is "stable")
+    // Is Warp running? (process name is "stable")
     const warpRunning = execSync(`osascript -e 'tell application "System Events" to (name of processes) contains "stable"'`, {
       stdio: 'pipe',
       encoding: 'utf-8'
     }).trim();
 
     if (warpRunning !== 'true') {
-      errors.push('Warp is not running');
-      return { ready: false, errors };
-    }
-
-    // Check 2: How many Warp windows?
-    const windowCount = execSync(`osascript -e 'tell application "System Events" to tell process "stable" to count windows'`, {
-      stdio: 'pipe',
-      encoding: 'utf-8'
-    }).trim();
-
-    if (windowCount !== '1') {
-      errors.push(`Expected 1 Warp window, found ${windowCount}. Close all but one.`);
-      return { ready: false, errors };
-    }
-
-    // Check 3: Is Warp frontmost?
-    const frontmostApp = execSync(`osascript -e 'tell application "System Events" to name of first application process whose frontmost is true'`, {
-      stdio: 'pipe',
-      encoding: 'utf-8'
-    }).trim();
-
-    if (frontmostApp !== 'stable') {
-      errors.push(`Warp is not focused (frontmost: ${frontmostApp}). Click on Warp window.`);
+      errors.push('Warp is not running. Start Warp first.');
       return { ready: false, errors };
     }
 

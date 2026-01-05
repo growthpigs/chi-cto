@@ -151,18 +151,18 @@ async function handleSpawn(args: string[]) {
 
   console.log(`✅ Environment validated (macOS + Warp)`);
 
-  // Verify exactly ONE Warp window is open and focused
+  // Verify Warp is running and focused
   const warpCheck = await verifyWarpReady();
   if (!warpCheck.ready) {
     console.error('❌ Warp validation failed:');
     warpCheck.errors.forEach(e => console.error(`   - ${e}`));
     console.log('\n📋 Instructions:');
-    console.log('   1. Close all Warp windows except ONE');
-    console.log('   2. Make sure this Warp window is visible and focused');
+    console.log('   1. Make sure Warp is the active window');
+    console.log('   2. Close other Warp windows to avoid keystroke interference');
     console.log('   3. Run chi-cto spawn again\n');
     process.exit(1);
   }
-  console.log('✅ Warp validated (1 window, focused, ready)');
+  console.log('✅ Warp validated (running, focused)');
 
   console.log(`📁 Project: ${projectPath}`);
   console.log(`👷 Workers to spawn: ${workerCount}\n`);
