@@ -1275,6 +1275,48 @@ If not specified, uses current working directory (process.cwd())
 var cli = new ChiCTOCLI();
 
 // src/mcp.ts
+function sanitizeProjectPath(path4) {
+  if (typeof path4 !== "string") {
+    return { type: "invalid_path", message: "projectPath must be a string" };
+  }
+  const trimmed = path4.trim();
+  if (!trimmed) {
+    return { type: "invalid_path", message: "projectPath cannot be empty" };
+  }
+  if (trimmed.includes("../") || trimmed.includes("..\\")) {
+    return { type: "invalid_path", message: "Path traversal not allowed" };
+  }
+  if (trimmed.length > 500) {
+    return { type: "invalid_path", message: "projectPath too long (max 500 chars)" };
+  }
+  return trimmed;
+}
+function validateTokenBudget(budget) {
+  if (budget === void 0 || budget === null) {
+    return 2e5;
+  }
+  const num = Number(budget);
+  if (!Number.isInteger(num) || num <= 0 || num > 1e7) {
+    return { type: "invalid_budget", message: "tokenBudget must be 1-10000000" };
+  }
+  return num;
+}
+function createRequestId() {
+  return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+function log(context, level, message, data) {
+  const logEntry = {
+    requestId: context.requestId,
+    level,
+    timestamp: context.timestamp,
+    message,
+    duration: context.duration
+  };
+  if (data && typeof data === "object" && !Array.isArray(data)) {
+    Object.assign(logEntry, data);
+  }
+  console.log(JSON.stringify(logEntry));
+}
 async function handleRequest(request) {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -1284,48 +1326,172 @@ async function handleRequest(request) {
   if (request.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+  const requestId = createRequestId();
+  const startTime = Date.now();
+  const url = new URL(request.url);
+  const path4 = url.pathname;
+  const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+  const context = {
+    requestId,
+    method: request.method,
+    path: path4,
+    timestamp
+  };
   try {
-    const url = new URL(request.url);
-    const path4 = url.pathname;
     const query = Object.fromEntries(url.searchParams);
-    console.log(`[${(/* @__PURE__ */ new Date()).toISOString()}] ${request.method} ${path4}`, {
-      query
-    });
     if (path4 === "/chi-cto/suggest" && request.method === "POST") {
-      const body = await request.json();
-      const result = await cli.execute({
-        subcommand: "suggest",
-        projectPath: body.projectPath
-      });
-      return new Response(JSON.stringify({ result }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+      try {
+        const body = await request.json();
+        const projectPath = body.projectPath !== void 0 ? body.projectPath : ".";
+        const pathValidation = sanitizeProjectPath(projectPath);
+        if (typeof pathValidation !== "string") {
+          const duration3 = Date.now() - startTime;
+          context.duration = duration3;
+          log(context, "warn", "Validation failed", pathValidation);
+          return new Response(
+            JSON.stringify({
+              error: pathValidation.message,
+              type: pathValidation.type,
+              field: pathValidation.field
+            }),
+            {
+              status: 422,
+              headers: { ...corsHeaders, "Content-Type": "application/json" }
+            }
+          );
+        }
+        const result = await cli.execute({
+          subcommand: "suggest",
+          projectPath: pathValidation
+        });
+        const duration2 = Date.now() - startTime;
+        context.duration = duration2;
+        log(context, "info", "suggest completed", { projectPath: pathValidation });
+        return new Response(JSON.stringify({ result }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      } catch (parseError) {
+        const duration2 = Date.now() - startTime;
+        context.duration = duration2;
+        const errorMsg = parseError instanceof Error ? parseError.message : "Malformed JSON";
+        log(context, "error", "JSON parse failed", { error: errorMsg });
+        return new Response(
+          JSON.stringify({
+            error: "Invalid JSON",
+            type: "malformed_json",
+            message: errorMsg
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          }
+        );
+      }
     }
     if (path4 === "/chi-cto/mode-b" && request.method === "POST") {
-      const body = await request.json();
-      const result = await cli.execute({
-        subcommand: "mode-b run",
-        projectPath: body.projectPath,
-        tokenBudget: body.tokenBudget || 2e5
-      });
-      return new Response(JSON.stringify({ result }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+      try {
+        const body = await request.json();
+        const projectPath = body.projectPath !== void 0 ? body.projectPath : ".";
+        const pathValidation = sanitizeProjectPath(projectPath);
+        if (typeof pathValidation !== "string") {
+          const duration3 = Date.now() - startTime;
+          context.duration = duration3;
+          log(context, "warn", "Path validation failed", pathValidation);
+          return new Response(
+            JSON.stringify({
+              error: pathValidation.message,
+              type: pathValidation.type,
+              field: pathValidation.field
+            }),
+            {
+              status: 422,
+              headers: { ...corsHeaders, "Content-Type": "application/json" }
+            }
+          );
+        }
+        const budgetValidation = validateTokenBudget(body.tokenBudget);
+        if (typeof budgetValidation !== "number") {
+          const duration3 = Date.now() - startTime;
+          context.duration = duration3;
+          log(context, "warn", "Budget validation failed", budgetValidation);
+          return new Response(
+            JSON.stringify({
+              error: budgetValidation.message,
+              type: budgetValidation.type,
+              field: budgetValidation.field
+            }),
+            {
+              status: 422,
+              headers: { ...corsHeaders, "Content-Type": "application/json" }
+            }
+          );
+        }
+        const result = await cli.execute({
+          subcommand: "mode-b run",
+          projectPath: pathValidation,
+          tokenBudget: budgetValidation
+        });
+        const duration2 = Date.now() - startTime;
+        context.duration = duration2;
+        log(context, "info", "mode-b run completed", { projectPath: pathValidation, tokenBudget: budgetValidation });
+        return new Response(JSON.stringify({ result }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      } catch (parseError) {
+        const duration2 = Date.now() - startTime;
+        context.duration = duration2;
+        const errorMsg = parseError instanceof Error ? parseError.message : "Malformed JSON";
+        log(context, "error", "JSON parse failed", { error: errorMsg });
+        return new Response(
+          JSON.stringify({
+            error: "Invalid JSON",
+            type: "malformed_json",
+            message: errorMsg
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          }
+        );
+      }
     }
     if (path4 === "/chi-cto/status" && request.method === "GET") {
       const projectPath = query.projectPath || ".";
+      const pathValidation = sanitizeProjectPath(projectPath);
+      if (typeof pathValidation !== "string") {
+        const duration3 = Date.now() - startTime;
+        context.duration = duration3;
+        log(context, "warn", "Path validation failed", pathValidation);
+        return new Response(
+          JSON.stringify({
+            error: pathValidation.message,
+            type: pathValidation.type,
+            field: pathValidation.field
+          }),
+          {
+            status: 422,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          }
+        );
+      }
       const result = await cli.execute({
         subcommand: "status",
-        projectPath
+        projectPath: pathValidation
       });
+      const duration2 = Date.now() - startTime;
+      context.duration = duration2;
+      log(context, "info", "status completed", { projectPath: pathValidation });
       return new Response(JSON.stringify({ result }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
     if (path4 === "/health" && request.method === "GET") {
+      const duration2 = Date.now() - startTime;
+      context.duration = duration2;
+      log(context, "info", "health check");
       return new Response(
         JSON.stringify({
           status: "ok",
@@ -1340,11 +1506,17 @@ async function handleRequest(request) {
     }
     if (path4 === "/" && request.method === "GET") {
       const help = await cli.execute({ subcommand: "status" });
+      const duration2 = Date.now() - startTime;
+      context.duration = duration2;
+      log(context, "info", "root endpoint");
       return new Response(JSON.stringify({ result: help }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
+    const duration = Date.now() - startTime;
+    context.duration = duration;
+    log(context, "warn", "Not found");
     return new Response(
       JSON.stringify({
         error: "Not found",
@@ -1362,11 +1534,14 @@ async function handleRequest(request) {
       }
     );
   } catch (error) {
+    const duration = Date.now() - startTime;
+    context.duration = duration;
     const errorMessage = error instanceof Error ? error.message : "Internal server error";
-    console.error("Error handling request:", errorMessage);
+    log(context, "error", "Unhandled error", { error: errorMessage });
     return new Response(
       JSON.stringify({
-        error: errorMessage
+        error: errorMessage,
+        type: "internal_error"
       }),
       {
         status: 500,
