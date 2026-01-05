@@ -7,9 +7,26 @@ export interface GateResult {
     action: 'proceed' | 'ask-user' | 'block';
     details?: string[];
 }
+/**
+ * Interface for command execution - allows dependency injection for testing
+ * TECH DEBT: Currently tests bypass this via NODE_ENV check. Proper fix is to:
+ * 1. Inject a MockCommandExecutor in tests
+ * 2. Remove all NODE_ENV === 'test' checks
+ * 3. Test the actual parsing logic with mock command output
+ */
+export interface CommandExecutor {
+    execute(command: string, args: string[], cwd: string): string;
+}
+/**
+ * Default command executor using child_process
+ */
+export declare class ShellCommandExecutor implements CommandExecutor {
+    execute(command: string, args: string[], cwd: string): string;
+}
 export declare class QualityGatesExecutor {
     private projectPath;
-    constructor(projectPath: string);
+    private executor;
+    constructor(projectPath: string, executor?: CommandExecutor);
     /**
      * Gate 1: Test Coverage (≥80%)
      * PASS: ≥80%

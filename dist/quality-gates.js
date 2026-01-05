@@ -1,11 +1,26 @@
 "use strict";
 // src/quality-gates.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.QualityGatesExecutor = void 0;
+exports.QualityGatesExecutor = exports.ShellCommandExecutor = void 0;
 const child_process_1 = require("child_process");
+/**
+ * Default command executor using child_process
+ */
+class ShellCommandExecutor {
+    execute(command, args, cwd) {
+        return (0, child_process_1.execSync)(`${command} ${args.join(' ')}`, {
+            cwd,
+            encoding: 'utf-8',
+            stdio: ['pipe', 'pipe', 'pipe']
+        });
+    }
+}
+exports.ShellCommandExecutor = ShellCommandExecutor;
 class QualityGatesExecutor {
-    constructor(projectPath) {
+    constructor(projectPath, executor) {
         this.projectPath = projectPath;
+        // Use provided executor or default to shell executor
+        this.executor = executor || new ShellCommandExecutor();
     }
     /**
      * Gate 1: Test Coverage (≥80%)
