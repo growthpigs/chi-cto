@@ -20,11 +20,11 @@
 
 | Need | Location |
 |------|----------|
-| Operations guide | `docs/RUNBOOK.md` |
-| Architecture | `docs/ARCHITECTURE-DEEP-DIVE.md` |
+| Operations guide | `docs/06-reference/RUNBOOK.md` |
+| Architecture | `docs/04-technical/ARCHITECTURE-DEEP-DIVE.md` |
 | Feature plans | `docs/05-planning/[feature]/PLAN.md` |
-| Stress test results | `docs/STRESS-TEST-REPORT-2026-01-05.md` |
-| Warp automation | `docs/WARP-AUTOMATION.md` |
+| Reports | `docs/08-reports/` |
+| Reference docs | `docs/06-reference/` |
 | Source code | `src/` |
 | Tests | `tests/` |
 
