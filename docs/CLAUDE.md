@@ -22,7 +22,6 @@
 |------|----------|
 | Operations guide | `docs/RUNBOOK.md` |
 | Architecture | `docs/ARCHITECTURE-DEEP-DIVE.md` |
-| Feature plans | `docs/05-planning/[feature]/PLAN.md` |
 | Stress test results | `docs/STRESS-TEST-REPORT-2026-01-05.md` |
 | Warp automation | `docs/WARP-AUTOMATION.md` |
 | Source code | `src/` |

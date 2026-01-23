@@ -1,24 +1,24 @@
-# Active Tasks - Practical Chi CTO Test
+# Active Tasks - AudienceOS Marketing Page
 
-Real-world parallel tasks for validating Warp orchestration.
+Parallel tasks for building a Linear-style marketing page using Mobbin research.
 
-## Feature: AudienceOS Codebase Scout
-- urgency: 8
-- importance: 8
-- confidence: 9
-- impact: 8
-- description: Explore the AudienceOS Command Center project at /Users/rodericandrews/_PAI/projects/command_center_audience_os. Find the main entry points, identify the tech stack, and list the top 5 most complex components by file size. Write findings to test-project/results/audienceos-scout.md.
+## Feature: Mobbin Linear Research
+- urgency: 9
+- importance: 10
+- confidence: 10
+- impact: 9
+- description: Use Claude in Chrome to visit mobbin.com and search for "Linear" homepage designs. Analyze 3-5 Linear screens focusing on: hero layout, typography hierarchy, color usage, button styles, spacing patterns, dark mode aesthetic. Take screenshots of key patterns. Write design audit to test-project/marketing-page/mobbin-research.md.
 
-## Feature: Chi-Gateway Health Inspector
-- status: ✅ COMPLETE
+## Feature: AudienceOS Feature Audit
+- urgency: 9
+- importance: 9
+- confidence: 10
+- impact: 9
+- description: Use Claude in Chrome to explore https://app.audienceos.com or the AudienceOS Command Center codebase. Identify: core features (what does it do?), target users (who is it for?), key differentiators (why choose this?). Write value proposition document to test-project/marketing-page/value-props.md.
+
+## Feature: Hero Section Build
 - urgency: 8
 - importance: 9
-- confidence: 9
-- impact: 8
-- completed: 2026-01-05
-- description: Use Claude in Chrome to navigate to https://chi-gateway.roderic-andrews.workers.dev/health and capture the response. Then check the chi-gateway source at ~/.claude/infrastructure/cloudflare/chi-gateway/ for any TODO comments or FIXME markers. Write findings to test-project/results/chi-gateway-health.md.
-- deliverables:
-  - results/chi-gateway-health.md (health inspection report)
-  - src/index.ts, test/index.test.ts (18 tests, 100% coverage)
-  - jest.config.js, package.json (test infrastructure)
-  - .chi-cto/workers/.../status.json, handover.md
+- confidence: 10
+- impact: 9
+- description: After research tasks complete, combine Mobbin design patterns with AudienceOS value props. Create a Linear-inspired hero section using HTML + Tailwind CSS. Include: bold headline, supporting copy, primary CTA, dark gradient background like Linear. Write to test-project/marketing-page/hero.html.

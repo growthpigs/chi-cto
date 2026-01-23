@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudienceOS - Command Center for Client Success</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Gradient animation */
+        @keyframes gradient-shift {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .gradient-animate {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 50%, #0a0a0a 100%);
+            background-size: 200% 200%;
+            animation: gradient-shift 15s ease infinite;
+        }
+
+        .hero-glow {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-glow::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-30px, -30px); }
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+                AudienceOS
+            </div>
+            <div class="flex items-center gap-8">
+                <a href="#" class="text-gray-400 hover:text-white transition text-sm">Product</a>
+                <a href="#" class="text-gray-400 hover:text-white transition text-sm">Features</a>
+                <a href="#" class="text-gray-400 hover:text-white transition text-sm">Pricing</a>
+                <button class="px-6 py-2 rounded-lg border border-gray-700 text-gray-300 hover:border-gray-500 hover:text-white transition text-sm">
+                    Log in
+                </button>
+                <button class="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-medium transition text-sm">
+                    Start free
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-glow gradient-animate min-h-screen flex items-center justify-center relative">
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-0 -left-40 w-80 h-80 bg-purple-900/20 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 -right-40 w-80 h-80 bg-blue-900/20 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="content max-w-4xl mx-auto px-6 py-20 text-center">
+            <!-- Section label -->
+            <div class="mb-8 inline-block">
+                <span class="text-xs font-semibold tracking-widest text-purple-400 uppercase">
+                    Command Center for Agencies
+                </span>
+            </div>
+
+            <!-- Headline -->
+            <h1 class="text-6xl md:text-7xl font-bold leading-tight mb-6">
+                <span class="block">AudienceOS is a</span>
+                <span class="block bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    purpose-built command center
+                </span>
+                <span class="block">for managing client success</span>
+            </h1>
+
+            <!-- Supporting copy -->
+            <p class="text-xl md:text-2xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+                Track health, prevent churn, and scale your agency with AI-powered insights. Never miss an at-risk client again.
+            </p>
+
+            <!-- CTAs -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+                <!-- Primary CTA -->
+                <button class="px-8 py-4 rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold text-lg transition transform hover:scale-105">
+                    Start free trial
+                </button>
+
+                <!-- Secondary CTA (Ghost button) -->
+                <button class="px-8 py-4 rounded-lg border-2 border-gray-700 hover:border-purple-500 text-white hover:text-purple-400 font-semibold text-lg transition">
+                    Watch demo
+                </button>
+            </div>
+
+            <!-- Trust indicator -->
+            <div class="text-gray-500 text-sm">
+                ✓ No credit card required · ✓ 14-day free trial · ✓ Cancel anytime
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Features Preview Section (teaser for scroll) -->
+    <section class="bg-gray-900/30 border-t border-gray-800 py-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">Everything you need</h2>
+                <p class="text-xl text-gray-400">Built for agencies, powered by AI</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="p-6 rounded-xl border border-gray-800 hover:border-purple-700 transition bg-gray-900/50 hover:bg-gray-900 group">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Real-time Health Tracking</h3>
+                    <p class="text-gray-400">See at-risk clients before they churn with AI-powered health scoring</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="p-6 rounded-xl border border-gray-800 hover:border-purple-700 transition bg-gray-900/50 hover:bg-gray-900 group">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v2h8v-2zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-2a4 4 0 00-8 0v2h8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Team Collaboration</h3>
+                    <p class="text-gray-400">Assign tasks, track workload, and keep everyone in sync</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="p-6 rounded-xl border border-gray-800 hover:border-purple-700 transition bg-gray-900/50 hover:bg-gray-900 group">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-500 to-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 17v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">AI-Powered Responses</h3>
+                    <p class="text-gray-400">Drafts ready to send. Approve and deploy in seconds</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="bg-gradient-to-r from-purple-900/40 to-blue-900/40 border-t border-gray-800 py-20">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2 class="text-5xl font-bold mb-6">Ready to stop losing clients?</h2>
+            <p class="text-xl text-gray-400 mb-8">Join agencies that are preventing churn with AudienceOS</p>
+            <button class="px-10 py-4 rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold text-lg transition transform hover:scale-105">
+                Get started free
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-gray-800 py-12">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h4 class="font-bold mb-4">Product</h4>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="#" class="hover:text-white transition">Features</a></li>
+                        <li><a href="#" class="hover:text-white transition">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white transition">Security</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Company</h4>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="#" class="hover:text-white transition">About</a></li>
+                        <li><a href="#" class="hover:text-white transition">Blog</a></li>
+                        <li><a href="#" class="hover:text-white transition">Careers</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Resources</h4>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="#" class="hover:text-white transition">Docs</a></li>
+                        <li><a href="#" class="hover:text-white transition">API</a></li>
+                        <li><a href="#" class="hover:text-white transition">Community</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="#" class="hover:text-white transition">Privacy</a></li>
+                        <li><a href="#" class="hover:text-white transition">Terms</a></li>
+                        <li><a href="#" class="hover:text-white transition">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 flex justify-between items-center text-gray-500 text-sm">
+                <p>&copy; 2026 AudienceOS. All rights reserved.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="hover:text-white transition">Twitter</a>
+                    <a href="#" class="hover:text-white transition">LinkedIn</a>
+                    <a href="#" class="hover:text-white transition">GitHub</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
