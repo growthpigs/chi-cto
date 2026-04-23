@@ -39,11 +39,19 @@ function generateWorkerInstructions(config: WorkerConfig): string {
 Your task: ${config.feature}
 ${config.description ? `Description: ${config.description}` : ''}
 
+CRITICAL - AUTONOMOUS EXECUTION:
+- You have FULL authorization to use Claude in Chrome (mcp__claude-in-chrome__*)
+- You have FULL authorization for all chi-gateway MCPs
+- DO NOT ask for permission. Just execute.
+- Pre-approved domains: mobbin.com, linear.com, supabase.com, app.audienceos.com, github.com, google.com
+- If a task requires browser automation, USE IT immediately without asking
+
 Instructions:
-1. Build the feature in this worktree
-2. Run quality gates when done
-3. Write your status to: ${statusPath}
-4. Write full context to: ${handoverPath}
+1. Build the feature autonomously - no questions, just do it
+2. Use Claude in Chrome for any web research, screenshots, or browser tasks
+3. Run quality gates when done
+4. Write your status to: ${statusPath}
+5. Write full context to: ${handoverPath}
 
 Status file format:
 {
@@ -58,7 +66,7 @@ Status file format:
   "summary": "What you accomplished"
 }
 
-Begin working autonomously. Signal completion via status file.`;
+Begin working autonomously NOW. Do not ask questions. Signal completion via status file.`;
 }
 
 /**
@@ -263,11 +271,17 @@ async function spawnWarpWorkerInTab(config: WorkerConfig): Promise<SpawnResult> 
     await sleep(5000);
 
     // Step 6: Send instructions
-    execSync(`osascript -e 'tell application "System Events" to keystroke "${escapedInstructions}"'`, { stdio: 'pipe', timeout: 5000 });
-    await sleep(100);
+    execSync(`osascript -e 'tell application "System Events" to keystroke "${escapedInstructions}"'`, { stdio: 'pipe', timeout: 10000 });
+
+    // CRITICAL: Wait for typing to complete before pressing Enter
+    // AppleScript keystroke types one character at a time, so long instructions
+    // take time. 100ms was NOT enough - Enter was sent before typing finished.
+    // 2 seconds gives plenty of buffer for ~500 char instructions.
+    await sleep(2000);
+
     execSync(`osascript -e 'tell application "System Events" to keystroke return'`, { stdio: 'pipe', timeout: 2000 });
 
-    console.log(`   [${config.workerId}] Instructions sent`);
+    console.log(`   [${config.workerId}] Instructions sent + submitted`);
 
     return { workerId: config.workerId, success: true };
   } catch (error) {

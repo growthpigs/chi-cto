@@ -32,6 +32,12 @@ import {
 } from './worker-monitor';
 import { readActiveTasksMarkdown } from './orchestrator';
 import { PriorityScorer } from './priority-scoring';
+import {
+  detectPhase,
+  getPhaseReport,
+  getParallelTasks,
+  approvePhase
+} from './phase-orchestrator';
 
 /**
  * Main CLI entry point
@@ -56,6 +62,18 @@ async function main() {
     // Handle workers commands
     if (subcommand === 'workers') {
       await handleWorkers(args);
+      process.exit(0);
+    }
+
+    // Handle phase commands
+    if (subcommand === 'phase') {
+      await handlePhase(args);
+      process.exit(0);
+    }
+
+    // Handle orchestrate command (full workflow)
+    if (subcommand === 'orchestrate') {
+      await handleOrchestrate(args);
       process.exit(0);
     }
 
@@ -425,6 +443,129 @@ async function handleWorkersConsolidate(projectPath: string) {
     console.log('\nWorker summaries:');
     result.summaries.forEach(s => console.log(`  ${s}`));
   }
+}
+
+/**
+ * Handle phase command - show current phase and next action
+ */
+async function handlePhase(args: string[]) {
+  const projectPath = expandPath(args[1] || process.cwd());
+
+  console.log(`\n🔍 Detecting project phase...`);
+
+  const status = detectPhase(projectPath);
+  const report = getPhaseReport(status);
+
+  console.log(report);
+
+  // If ready to spawn, show parallelizable tasks
+  if (status.canSpawn) {
+    const tasks = getParallelTasks(projectPath);
+    if (tasks.length > 0) {
+      console.log(`\nParallelizable tasks from feature specs:\n`);
+      const parallelTasks = tasks.filter(t => t.parallel);
+      parallelTasks.forEach((t, i) => {
+        console.log(`  ${i + 1}. [${t.feature}] ${t.name}`);
+        if (t.description !== t.name) {
+          console.log(`     ${t.description}`);
+        }
+      });
+      console.log(`\nTotal: ${parallelTasks.length} parallel tasks\n`);
+    }
+  }
+}
+
+/**
+ * Handle orchestrate command - full A-F workflow with approval gates
+ *
+ * This is the main Chi CTO workflow:
+ * 1. Detect current phase
+ * 2. Run next phase command (outputs instructions)
+ * 3. Wait for user approval
+ * 4. Repeat until all phases complete
+ * 5. Spawn parallel workers for implementation
+ */
+async function handleOrchestrate(args: string[]) {
+  const projectPath = expandPath(args[1] || process.cwd());
+  const projectName = path.basename(projectPath);
+
+  console.log(`\n🚀 Chi CTO Orchestration`);
+  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+  console.log(`📁 Project: ${projectName}`);
+  console.log(`📍 Path: ${projectPath}\n`);
+
+  // Detect current phase
+  const status = detectPhase(projectPath);
+
+  console.log(`Current Phase: ${status.currentPhase}`);
+  console.log(`Completed: ${status.completedPhases.join(' → ') || 'None'}\n`);
+
+  if (status.canSpawn) {
+    console.log(`✅ All specifications complete!\n`);
+    console.log(`Ready to spawn parallel workers.\n`);
+
+    const tasks = getParallelTasks(projectPath);
+    const parallelTasks = tasks.filter(t => t.parallel);
+
+    if (parallelTasks.length > 0) {
+      console.log(`📋 Tasks to build in parallel:\n`);
+      parallelTasks.forEach((t, i) => {
+        console.log(`  ${i + 1}. [${t.feature}] ${t.name}`);
+      });
+      console.log('');
+    }
+
+    console.log(`To spawn workers: chi-cto spawn ${projectPath} --workers ${Math.min(parallelTasks.length, 3)}\n`);
+    return;
+  }
+
+  // Not ready - show next phase
+  console.log(`📝 Next Phase Required: ${status.currentPhase}\n`);
+
+  if (status.missingDocs.length > 0) {
+    console.log(`Missing documents:`);
+    status.missingDocs.forEach(doc => {
+      console.log(`  ❌ ${doc}`);
+    });
+    console.log('');
+  }
+
+  console.log(`🔧 To proceed, run the following command in a Claude Code session:\n`);
+  console.log(`   ${status.nextCommand}\n`);
+  console.log(`This will:`);
+
+  switch (status.currentPhase) {
+    case 'P':
+      console.log(`   - Define the MVP from your raw idea`);
+      console.log(`   - Create docs/01-product/MVP-PRD.md`);
+      break;
+    case 'B1':
+      console.log(`   - Define the product vision`);
+      console.log(`   - Identify target users and success metrics`);
+      console.log(`   - Create docs/01-product/VISION.md`);
+      break;
+    case 'B2':
+      console.log(`   - Define what's IN scope and OUT of scope`);
+      console.log(`   - Create docs/01-product/SCOPE.md`);
+      break;
+    case 'B3':
+      console.log(`   - Identify risks, blockers, dependencies`);
+      console.log(`   - Create docs/05-planning/RISK-REGISTER.md`);
+      break;
+    case 'D1':
+      console.log(`   - Create full PRD with user stories`);
+      console.log(`   - Define data model, API contracts, tech stack`);
+      console.log(`   - Create docs/04-technical/*.md`);
+      break;
+    case 'D2':
+      console.log(`   - Create feature specs with tasks`);
+      console.log(`   - Create features/[name].md for each feature`);
+      break;
+  }
+
+  console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+  console.log(`After approval, run: chi-cto orchestrate ${projectPath}`);
+  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
 }
 
 /**
