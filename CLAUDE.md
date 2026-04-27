@@ -22,7 +22,7 @@
 |------|----------|
 | Operations guide | `docs/06-reference/RUNBOOK.md` |
 | Architecture | `docs/04-technical/ARCHITECTURE-DEEP-DIVE.md` |
-| Feature plans | `docs/05-planning/[feature]/PLAN.md` |
+| Feature plans / FSDs | GitHub issues with `[FSD]` title prefix (project-management lives in GitHub per [PAI governance](https://github.com/growthpigs/lifemodo/issues/561)) |
 | Reports | `docs/08-reports/` |
 | Reference docs | `docs/06-reference/` |
 | Source code | `src/` |
